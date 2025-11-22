@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎡 Рулетка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .roulette {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 30px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #FF6B6B 0deg 45deg,
+                #4ECDC4 45deg 90deg,
+                #45B7D1 90deg 135deg,
+                #FFA07A 135deg 180deg,
+                #98D8C8 180deg 225deg,
+                #F7DC6F 225deg 270deg,
+                #BB8FCE 270deg 315deg,
+                #85C1E2 315deg 360deg
+            );
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s linear;
+        }
+
+        .wheel.spinning {
+            animation: spin 3s ease-out forwards;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(1800deg);
+            }
+        }
+
+        .pointer {
+            position: absolute;
+            top: -15px;
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #333;
+            z-index: 10;
+        }
+
+        .info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        .info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            border-left: 4px solid #4caf50;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .result p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+
+        .stars {
+            display: inline-block;
+            color: #ffc107;
+            font-size: 20px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎡 Рулетка Telegram</h1>
+
+        <div class="info">
+            <p>Крути рулетку и выигрывай звёзды!</p>
+            <p class="price">Стоимость: 25⭐</p>
+        </div>
+
+        <div class="roulette">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <span>🎁</span>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="spin-btn" id="spinBtn" onclick="spinRoulette()">
+                🎡 Крутить рулетку (25⭐)
+            </button>
+        </div>
+
+        <div class="result" id="result">
+            <h3>🎉 Поздравляем!</h3>
+            <p>Вы выиграли: <span id="prizeAmount">0</span><span class="stars">⭐</span></p>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Инициализируем Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        // Список возможных призов
+        const PRIZES = [5, 10, 15, 20, 25, 30, 50, 100];
+        const PRIZE_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+
+        let isSpinning = false;
+
+        function spinRoulette() {
+            if (isSpinning) return;
+
+            isSpinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            const wheel = document.getElementById('wheel');
+            const result = document.getElementById('result');
+
+            spinBtn.disabled = true;
+            result.classList.remove('show');
+
+            result.style.display = 'none';
+
+            const prizeIndex = Math.floor(Math.random() * PRIZES.length);
+            const prize = PRIZES[prizeIndex];
+            const finalAngle = PRIZE_ANGLES[prizeIndex];
+
+            const spinAngle = 360 * 5 + finalAngle;
+            wheel.style.transition = 'none';
+            wheel.style.transform = 'rotate(0deg)';
+
+            setTimeout(() => {
+                wheel.style.transition = 'transform 3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                wheel.style.transform = `rotate(${spinAngle}deg)`;
+            }, 10);
+
+            setTimeout(() => {
+                document.getElementById('prizeAmount').textContent = prize;
+                result.classList.add('show');
+
+                if (tg.initData) {
+                    sendResultToBot(prize);
+                }
+
+                spinBtn.disabled = false;
+                isSpinning = false;
+            }, 3100);
+        }
+
+        function sendResultToBot(prize) {
+            tg.sendData(JSON.stringify({
+                action: 'spin_result',
+                prize: prize,
+                timestamp: new Date().toISOString()
+            }));
+        }
+
+        tg.onEvent('mainButtonClicked', () => {
+            tg.close();
+        });
+    </script>
+</body>
+</html>
